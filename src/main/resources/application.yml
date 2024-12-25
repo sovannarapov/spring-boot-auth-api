@@ -21,7 +21,7 @@ spring:
     show_sql: true
   main:
     web-application-type: servlet
-    allow-bean-definition-overriding: true
+#    allow-bean-definition-overriding: true
   # Java mail properties
   mail:
     host: localhost
@@ -38,6 +38,8 @@ spring:
         connectiontimeout: 5000
         timeout: 3000
         writetimeout: 5000
+  profiles:
+    active: test
 
 application:
   security:
