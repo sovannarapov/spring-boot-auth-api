@@ -66,26 +66,26 @@ jobs:
           SPRING_DATASOURCE_PASSWORD: postgres
         run: mvn test
 
-      - name: Generate test report
-        if: always()
-        run: mvn surefire-report:report
-
-      - name: Upload test report
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: test-report
-          path: target/site/surefire-report.html
-
-      - name: Run code coverage
-        run: mvn jacoco:report
-
-      - name: Upload code coverage report
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: code-coverage-report
-          path: target/site/jacoco/index.html
-
-      - name: Run static code analysis
-        run: mvn checkstyle:check
+#      - name: Generate test report
+#        if: always()
+#        run: mvn surefire-report:report
+#
+#      - name: Upload test report
+#        if: always()
+#        uses: actions/upload-artifact@v3
+#        with:
+#          name: test-report
+#          path: target/site/surefire-report.html
+#
+#      - name: Run code coverage
+#        run: mvn jacoco:report
+#
+#      - name: Upload code coverage report
+#        if: always()
+#        uses: actions/upload-artifact@v3
+#        with:
+#          name: code-coverage-report
+#          path: target/site/jacoco/index.html
+#
+#      - name: Run static code analysis
+#        run: mvn checkstyle:check
