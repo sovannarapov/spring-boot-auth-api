@@ -14,7 +14,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,9 +55,9 @@ public class AuthenticationControllerTest {
     }
 
     @Test
-    void shouldCreateNewUser() throws Exception {
+    void shouldRegisterNewUser() throws Exception {
         var user = new User(2, "John", "Wick", "johnwick@gmail.com", "password", Role.USER);
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/auth/register")
+        mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(user)))
                 .andExpect(status().isOk());
