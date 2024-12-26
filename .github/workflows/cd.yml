@@ -71,7 +71,7 @@ jobs:
           tags: |
             type=sha
           labels: |
-            org.opencontainers.image.title=Github Actions Java
+            org.opencontainers.image.title=Spring Boot Auth
             org.opencontainers.image.description=Build docker image for Java with github-action and docker hub
             org.opencontainers.image.url=https://github.com/${{github.repository}}
             org.opencontainers.image.revision=${{github.sha}}
