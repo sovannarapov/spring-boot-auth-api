@@ -45,11 +45,11 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
-      - name: List target directory
-        run: ls -la target
-
       - name: Build with Maven 👨🏻‍💻
         run: mvn clean package
+
+      - name: List target directory
+        run: ls -la target
 
       - name: Login to Dockerhub
         uses: docker/login-action@v3
