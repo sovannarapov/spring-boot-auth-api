@@ -50,7 +50,7 @@ jobs:
             ${{ runner.os }}-maven-
 
       - name: Install dependencies 👨🏻‍💻
-        run: mvn install -DskipTests
+        run: mvn clean install -Dspring.profiles.active=test
 
       - name: Wait for PostgreSQL ⏳
         run: |

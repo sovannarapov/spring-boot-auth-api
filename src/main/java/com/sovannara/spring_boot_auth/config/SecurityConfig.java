@@ -4,6 +4,7 @@ import com.sovannara.spring_boot_auth.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -17,6 +18,7 @@ import com.sovannara.spring_boot_auth.jwt.JwtFilter;
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
+@Profile("dev")
 public class SecurityConfig {
 
     private final UserService userService;
