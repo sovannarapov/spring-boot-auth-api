@@ -1,0 +1,63 @@
+name: CD
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - develop
+
+env:
+  IMAGE_NAME: spring-boot-auth
+  IMAGE_TAG: ${{ github.run_number }}
+
+jobs:
+  build-and-push:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 2
+    strategy:
+      matrix:
+        os: [ubuntu-24.04]
+
+    steps:
+      - name: Checkout 🛎
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21 🏗
+        uses: actions/setup-java@v3
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Build with Maven 👨🏻‍💻
+        run: mvn clean package
+
+      - name: Login to Dockerhub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+      - name: Create .env file
+        run: echo "${{ secrets.ENV }}" | base64 -d > .env
+
+      - name: Build and tag Docker image
+        run: |
+          docker build . -t ${{ secrets.DOCKER_HUB_USERNAME }}/$IMAGE_NAME:v$IMAGE_TAG
+
+      - name: Push Docker image
+        run: docker push ${{ secrets.DOCKER_HUB_USERNAME }}/$IMAGE_NAME:v$IMAGE_TAG
+
+      - name: Update image metadata
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ secrets.DOCKER_HUB_USERNAME }}/$IMAGE_NAME:v$IMAGE_TAG
+          tags: |
+            type=sha
+          labels: |
+            org.opencontainers.image.title=Github Actions Java
+            org.opencontainers.image.description=Build docker image for Java with github-action and docker hub
+            org.opencontainers.image.url=https://github.com/${{github.repository}}
+            org.opencontainers.image.revision=${{github.sha}}
+            org.opencontainers.image.licenses=MIT
