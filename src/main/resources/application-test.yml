@@ -3,5 +3,3 @@ spring:
     url: jdbc:postgresql://localhost:5432/workshop
     username: postgres
     password: postgres
-#  profiles:
-#    active: test
