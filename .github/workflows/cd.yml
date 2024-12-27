@@ -12,8 +12,8 @@ env:
   IMAGE_NAME: spring-boot-auth
   IMAGE_TAG: ${{ github.run_number }}
   DB_DATABASE: ${{ env.DB_DATABASE }}
-  DB_USERNAME: ${{ DB_USERNAME }}
-  DB_PASSWORD: ${{ DB_PASSWORD }}
+  DB_USERNAME: ${{ env.DB_USERNAME }}
+  DB_PASSWORD: ${{ env.DB_PASSWORD }}
 
 jobs:
   build-and-push:
