@@ -11,9 +11,9 @@ on:
 env:
   IMAGE_NAME: spring-boot-auth
   IMAGE_TAG: ${{ github.run_number }}
-  DB_DATABASE: ${{ env.DB_DATABASE }}
-  DB_USERNAME: ${{ env.DB_USERNAME }}
-  DB_PASSWORD: ${{ env.DB_PASSWORD }}
+  DB_DATABASE: ${{ secrets.DB_DATABASE }}
+  DB_USERNAME: ${{ secrets.DB_USERNAME }}
+  DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
 
 jobs:
   build-and-push:
@@ -29,9 +29,9 @@ jobs:
         ports:
           - 5432:5432
         env:
-          POSTGRES_DB: ${{ DB_DATABASE }}
-          POSTGRES_USER: ${{ DB_USERNAME }}
-          POSTGRES_PASSWORD: ${{ DB_PASSWORD }}
+          POSTGRES_DB: ${{ env.DB_DATABASE }}
+          POSTGRES_USER: ${{ env.DB_USERNAME }}
+          POSTGRES_PASSWORD: ${{ env.DB_PASSWORD }}
         options: >-
           --health-cmd="pg_isready -U postgres"
           --health-interval=10s
@@ -64,8 +64,7 @@ jobs:
         run: echo "${{ secrets.ENV }}" | base64 --decode > .env
 
       - name: Build and tag Docker image
-        run: |
-          docker build . -t ${{ secrets.DOCKER_HUB_USERNAME }}/$IMAGE_NAME:v$IMAGE_TAG
+        run: docker build . -t ${{ secrets.DOCKER_HUB_USERNAME }}/$IMAGE_NAME:v$IMAGE_TAG
 
       - name: Push Docker image 🚀
         run: docker push ${{ secrets.DOCKER_HUB_USERNAME }}/$IMAGE_NAME:v$IMAGE_TAG
