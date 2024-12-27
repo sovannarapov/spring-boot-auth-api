@@ -4,9 +4,6 @@ FROM openjdk:21-jdk
 # Set the working directory in the container
 WORKDIR /app
 
-# Build the jar file
-RUN mvn clean package
-
 # Copy the packaged jar file into the container
 COPY target/spring-boot-auth.jar /app/spring-boot-auth.jar
 
