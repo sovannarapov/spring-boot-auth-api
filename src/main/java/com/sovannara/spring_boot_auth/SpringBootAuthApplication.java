@@ -4,16 +4,17 @@ import io.github.cdimascio.dotenv.Dotenv;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import java.util.Objects;
-
 @SpringBootApplication
 public class SpringBootAuthApplication {
 
 	public static void main(String[] args) {
 		Dotenv dotenv = Dotenv.load();
-		System.setProperty("DB_URL", Objects.requireNonNull(dotenv.get("DB_URL")));
-		System.setProperty("DB_USERNAME", Objects.requireNonNull(dotenv.get("DB_USERNAME")));
-		System.setProperty("DB_PASSWORD", Objects.requireNonNull(dotenv.get("DB_PASSWORD")));
+		dotenv.entries().forEach(
+				entry -> {
+					System.setProperty(entry.getKey(), entry.getValue());
+					System.out.println(entry.getKey() + " = " + entry.getValue());
+				}
+		);
 
 		SpringApplication.run(SpringBootAuthApplication.class, args);
 	}
