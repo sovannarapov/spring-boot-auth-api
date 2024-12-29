@@ -73,4 +73,4 @@ jobs:
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/${{ env.DB_DATABASE }}
           SPRING_DATASOURCE_USERNAME: ${{ env.DB_USERNAME }}
           SPRING_DATASOURCE_PASSWORD: ${{ env.DB_PASSWORD }}
-        run: mvn test
+        run: mvn -X test
