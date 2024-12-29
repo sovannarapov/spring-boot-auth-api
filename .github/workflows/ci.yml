@@ -85,4 +85,4 @@ jobs:
 #          JWT_SECRET_KEY: your-secret-key
 #          JWT_ACCESS_TOKEN_EXPIRATION: 86400000
 #          JWT_REFRESH_TOKEN_EXPIRATION: 604800000
-        run: mvn test
+        run: mvn -X test
