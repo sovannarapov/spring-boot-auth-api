@@ -8,6 +8,11 @@ on:
     branches:
       - develop
 
+env:
+  DB_DATABASE: ${{ secrets.DB_DATABASE }}
+  DB_USERNAME: ${{ secrets.DB_USERNAME }}
+  DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+
 jobs:
   build:
     runs-on: ${{ matrix.os }}
@@ -22,9 +27,9 @@ jobs:
         ports:
           - 5432:5432
         env:
-          POSTGRES_DB: workshop
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: ${{ env.DB_DATABASE }}
+          POSTGRES_USER: ${{ env.DB_USERNAME }}
+          POSTGRES_PASSWORD: ${{ env.DB_PASSWORD }}
         options: >-
           --health-cmd="pg_isready -U postgres"
           --health-interval=10s
@@ -65,19 +70,19 @@ jobs:
 
       - name: Run tests 🧪
         env:
-          APP_PORT: ${{ secrets.APP_PORT }}
-          DB_URL: ${{ secrets.DB_URL }}
-          DB_USERNAME: ${{ secrets.DB_USERNAME }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          DB_DRIVER: ${{ secrets.DB_DRIVER }}
-          DB_DIALECT: ${{ secrets.DB_DIALECT }}
-          DB_SHOW_SQL: ${{ secrets.DB_SHOW_SQL }}
-          MAIL_HOST: ${{ secrets.MAIL_HOST }}
-          MAIL_PORT: ${{ secrets.MAIL_PORT }}
-          MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
-          MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
-          CONFIRMATION_URL: ${{ secrets.CONFIRMATION_URL }}
-          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
-          JWT_ACCESS_TOKEN_EXPIRATION: ${{ secrets.JWT_ACCESS_TOKEN_EXPIRATION }}
-          JWT_REFRESH_TOKEN_EXPIRATION: ${{ secrets.JWT_REFRESH_TOKEN_EXPIRATION }}
+          APP_PORT: 8080
+          DB_URL: jdbc:postgresql://localhost:5432/workshop
+          DB_USERNAME: postgres
+          DB_PASSWORD: postgres
+          DB_DRIVER: org.postgresql.Driver
+          DB_DIALECT: org.hibernate.dialect.PostgreSQLDialect
+          DB_SHOW_SQL: false
+#          MAIL_HOST: smtp.example.com
+#          MAIL_PORT: 587
+#          MAIL_USERNAME: your-email@example.com
+#          MAIL_PASSWORD: your-email-password
+#          CONFIRMATION_URL: http://localhost:8080/confirm
+#          JWT_SECRET_KEY: your-secret-key
+#          JWT_ACCESS_TOKEN_EXPIRATION: 86400000
+#          JWT_REFRESH_TOKEN_EXPIRATION: 604800000
         run: mvn test
