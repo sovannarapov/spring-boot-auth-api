@@ -1,0 +1,83 @@
+name: CD
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - develop
+
+env:
+  IMAGE_NAME: spring-boot-auth
+  IMAGE_TAG: ${{ github.run_number }}
+  DB_DATABASE: ${{ secrets.DB_DATABASE }}
+  DB_USERNAME: ${{ secrets.DB_USERNAME }}
+  DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+
+jobs:
+  build-and-push:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    strategy:
+      matrix:
+        os: [ubuntu-24.04]
+
+    services:
+      postgres:
+        image: postgres:latest
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_DB: ${{ env.DB_DATABASE }}
+          POSTGRES_USER: ${{ env.DB_USERNAME }}
+          POSTGRES_PASSWORD: ${{ env.DB_PASSWORD }}
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - name: Checkout 🛎
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 21 🏗
+        uses: actions/setup-java@v3
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Build with Maven 👨🏻‍💻
+        run: mvn clean package
+
+      - name: List target directory 📁
+        run: ls -la target
+
+      - name: Login to Dockerhub 🐳
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+      - name: Create .env file 📄
+        run: echo "${{ secrets.ENV }}" | base64 --decode > .env
+
+      - name: Build and tag Docker image
+        run: docker build . -t ${{ secrets.DOCKER_HUB_USERNAME }}/$IMAGE_NAME:v$IMAGE_TAG
+
+      - name: Push Docker image 🚀
+        run: docker push ${{ secrets.DOCKER_HUB_USERNAME }}/$IMAGE_NAME:v$IMAGE_TAG
+
+      - name: Update image metadata 📝
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ secrets.DOCKER_HUB_USERNAME }}/$IMAGE_NAME:v$IMAGE_TAG
+          tags: |
+            type=sha
+          labels: |
+            org.opencontainers.image.title=Spring Boot Auth
+            org.opencontainers.image.description=Build docker image for Java with github-action and docker hub
+            org.opencontainers.image.url=https://github.com/${{github.repository}}
+            org.opencontainers.image.revision=${{github.sha}}
+            org.opencontainers.image.licenses=MIT

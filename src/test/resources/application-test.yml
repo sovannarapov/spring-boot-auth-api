@@ -1,0 +1,52 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: spring-boot-auth
+  datasource:
+    url: jdbc:postgresql://localhost:5432/workshop
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    show_sql: true
+  main:
+    web-application-type: servlet
+
+  # Java mail properties
+  mail:
+    host: localhost
+    port: 1025
+    username: sovannara
+    password: sovannara
+    properties:
+      mail:
+        smtp:
+          trust: "*"
+        auth: true
+        starttls:
+          enabled: true
+        connectiontimeout: 5000
+        timeout: 3000
+        writetimeout: 5000
+
+application:
+  security:
+    auth:
+      confirmation-url: http://localhost:8080/api/v1/auth/confirm?token=%s
+    jwt:
+      # Got from online generate tool
+      secret-key: 4bb6d1dfbafb64a681139d1586b6f1160d18159afd57c8c79136d7490630407c
+      # 24 hours expire
+      access-token-expiration: 86400000
+      # 168 hours or 7 days expire
+      refresh-token-expiration: 604800000
