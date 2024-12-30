@@ -5,48 +5,48 @@ spring:
   application:
     name: spring-boot-auth
   datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
-    driver-class-name: ${DB_DRIVER}
+    url: jdbc:postgresql://localhost:5432/workshop
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
   jpa:
     database: postgresql
-    database-platform: ${DB_DIALECT}
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: create
     properties:
       hibernate:
-        dialect: ${DB_DIALECT}
+        dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
-    show_sql: ${DB_SHOW_SQL}
+    show_sql: true
   main:
     web-application-type: servlet
 
   # Java mail properties
   mail:
-    host: ${MAIL_HOST}
-    port: ${MAIL_PORT}
-    username: ${MAIL_USERNAME}
-    password: ${MAIL_PASSWORD}
+    host: localhost
+    port: 1025
+    username: sovannara
+    password: sovannara
     properties:
       mail:
         smtp:
           trust: "*"
-        auth: ${MAIL_AUTH_ENABLED}
+        auth: true
         starttls:
-          enabled: ${MAIL_STARTTLS_ENABLED}
-        connectiontimeout: ${MAIL_CONNECTION_TIMEOUT}
-        timeout: ${MAIL_TIMEOUT}
-        writetimeout: ${MAIL_WRITE_TIMEOUT}
+          enabled: true
+        connectiontimeout: 5000
+        timeout: 3000
+        writetimeout: 5000
 
 application:
   security:
     auth:
-      confirmation-url: ${CONFIRMATION_URL}
+      confirmation-url: http://localhost:8080/api/v1/auth/confirm?token=%s
     jwt:
       # Got from online generate tool
-      secret-key: ${JWT_SECRET_KEY}
+      secret-key: 4bb6d1dfbafb64a681139d1586b6f1160d18159afd57c8c79136d7490630407c
       # 24 hours expire
-      access-token-expiration: ${JWT_ACCESS_TOKEN_EXPIRATION}
+      access-token-expiration: 86400000
       # 168 hours or 7 days expire
-      refresh-token-expiration: ${JWT_REFRESH_TOKEN_EXPIRATION}
+      refresh-token-expiration: 604800000
