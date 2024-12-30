@@ -54,6 +54,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
+      - name: Print environment variables 📋
+        run: printenv | sort
+
       - name: Install dependencies 👨🏻‍💻
         run: mvn clean install -Dspring.profiles.active=test
 
@@ -67,9 +70,6 @@ jobs:
             echo "Waiting for PostgreSQL..."
             sleep 1
           done
-
-      - name: Print environment variables 📋
-        run: printenv | sort
 
       - name: Run tests 🧪
         env:
