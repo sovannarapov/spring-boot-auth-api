@@ -68,6 +68,9 @@ jobs:
             sleep 1
           done
 
+      - name: Print environment variables 📋
+        run: printenv | sort
+
       - name: Run tests 🧪
         env:
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/${{ env.DB_DATABASE }}
