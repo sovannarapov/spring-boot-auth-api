@@ -8,6 +8,11 @@ on:
     branches:
       - develop
 
+env:
+  DB_DATABASE: ${{ secrets.DB_DATABASE }}
+  DB_USERNAME: ${{ secrets.DB_USERNAME }}
+  DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+
 jobs:
   build:
     runs-on: ${{ matrix.os }}
@@ -53,4 +58,8 @@ jobs:
         run: mvn clean install -Dspring.profiles.active=test
 
       - name: Run tests 🧪
-        run: mvn test
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/${{ env.DB_DATABASE }}
+          SPRING_DATASOURCE_USERNAME: ${{ env.DB_USERNAME }}
+          SPRING_DATASOURCE_PASSWORD: ${{ env.DB_PASSWORD }}
+        run: mvn -X test
