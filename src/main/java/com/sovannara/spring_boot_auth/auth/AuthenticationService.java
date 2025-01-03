@@ -1,6 +1,9 @@
 package com.sovannara.spring_boot_auth.auth;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sovannara.spring_boot_auth.exception.ApiResponse;
+import com.sovannara.spring_boot_auth.exception.BadRequestException;
+import com.sovannara.spring_boot_auth.exception.UnauthorizedException;
 import com.sovannara.spring_boot_auth.jwt.JwtService;
 import com.sovannara.spring_boot_auth.token.Token;
 import com.sovannara.spring_boot_auth.token.TokenType;
@@ -43,11 +46,11 @@ public class AuthenticationService {
     private final JwtService jwtService;
 
     @Transactional
-    public AuthenticationResponseDto register(RegisterRequestDto registerRequestDto) {
+    public ApiResponse<AuthenticationResponseDto> register(RegisterRequestDto registerRequestDto) {
         final boolean userExists = repository.findByEmail(registerRequestDto.getEmail()).isPresent();
 
         if (userExists) {
-            throw new IllegalStateException("The user is already exists.");
+            throw new BadRequestException("The email is already exists.");
         }
 
         // Encode the password
@@ -80,20 +83,23 @@ public class AuthenticationService {
             logger.error("Failed to send confirmation email", e);
         }
 
-        return AuthenticationResponseDto
-                .builder()
+        return ApiResponse.success(AuthenticationResponseDto.builder()
                 .accessToken(jwtToken)
                 .refreshToken(refreshToken)
-                .build();
+                .build());
     }
 
-    public AuthenticationResponseDto login(LoginRequestDto request) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getEmail(),
-                        request.getPassword()
-                )
-        );
+    public ApiResponse<AuthenticationResponseDto> login(LoginRequestDto request) {
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getEmail(),
+                            request.getPassword()
+                    )
+            );
+        } catch (Exception e) {
+            throw new UnauthorizedException("Incorrect email or password.");
+        }
 
         var user = repository.findByEmail(request.getEmail())
                 .orElseThrow();
@@ -103,10 +109,10 @@ public class AuthenticationService {
         revokeAllUserTokens(user);
         saveUserToken(user, accessToken);
 
-        return AuthenticationResponseDto.builder()
+        return ApiResponse.success(AuthenticationResponseDto.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
-                .build();
+                .build());
     }
 
     private void saveUserToken(User user, String jwtToken) {
@@ -139,7 +145,7 @@ public class AuthenticationService {
     public String confirm(String token) {
         // get the token
         Token savedToken = tokenRepository.findByToken(token)
-                .orElseThrow(() -> new IllegalStateException("Token not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Token not found"));
 
         if (LocalDateTime.now().isAfter(savedToken.getExpiresAt())) {
             // Generate a token
@@ -165,6 +171,10 @@ public class AuthenticationService {
             }
 
             return "Token expired, a new token has been sent to your email";
+        }
+
+        if (savedToken.isExpired() || savedToken.isRevoked()) {
+            throw new UnauthorizedException("Invalid token");
         }
 
         User user = repository.findById(savedToken.getUser().getId())

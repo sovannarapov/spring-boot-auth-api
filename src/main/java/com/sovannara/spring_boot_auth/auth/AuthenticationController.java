@@ -1,9 +1,9 @@
 package com.sovannara.spring_boot_auth.auth;
 
+import com.sovannara.spring_boot_auth.exception.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -16,28 +16,28 @@ public class AuthenticationController {
     private final AuthenticationService service;
 
     @PostMapping("/register")
-    public ResponseEntity<AuthenticationResponseDto> register(
+    ApiResponse<AuthenticationResponseDto> register(
             @RequestBody RegisterRequestDto registerRequestDto
     ) {
-        return ResponseEntity.ok(service.register(registerRequestDto));
+        return service.register(registerRequestDto);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthenticationResponseDto> login(
+    ApiResponse<AuthenticationResponseDto> login(
             @RequestBody LoginRequestDto loginRequestDto
     ) {
-        return ResponseEntity.ok(service.login(loginRequestDto));
+        return service.login(loginRequestDto);
     }
 
     @GetMapping("/confirm")
-    public ResponseEntity<String> confirm(
+    String confirm(
             @RequestParam String token
     ) {
-        return ResponseEntity.ok(service.confirm(token));
+        return service.confirm(token);
     }
 
     @PostMapping("/refresh-token")
-    public void refreshToken(
+    void refreshToken(
             HttpServletRequest request,
             HttpServletResponse response
     ) throws IOException {
