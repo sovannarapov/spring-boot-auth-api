@@ -1,4 +1,7 @@
 package com.sovannara.spring_boot_auth.exception;
 
-public class ResourceNotFoundException {
+public class NotFoundException extends RuntimeException {
+    public NotFoundException(String message) {
+        super(message);
+    }
 }
