@@ -10,13 +10,13 @@ import lombok.ToString;
 public class ApiResponse<T> {
 
     private boolean success;
-    private String errorCode;
+    private String statusCode;
     private String message;
     private T data;
 
-    public ApiResponse(boolean success, String errorCode, String message, T data) {
+    public ApiResponse(boolean success, String statusCode, String message, T data) {
         this.success = success;
-        this.errorCode = errorCode;
+        this.statusCode = statusCode;
         this.message = message;
         this.data = data;
     }
@@ -25,7 +25,11 @@ public class ApiResponse<T> {
         return new ApiResponse<>(true, "200", "Successfully", data);
     }
 
-    public static <T> ApiResponse<T> error(String errorCode, String message) {
-        return new ApiResponse<>(false, errorCode, message, null);
+    public static <T> ApiResponse<T> success() {
+        return new ApiResponse<>(true, "200", "Successfully", null);
+    }
+
+    public static <T> ApiResponse<T> error(String statusCode, String message) {
+        return new ApiResponse<>(false, statusCode, message, null);
     }
 }
