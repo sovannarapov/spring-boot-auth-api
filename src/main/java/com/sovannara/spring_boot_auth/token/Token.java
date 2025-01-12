@@ -2,10 +2,7 @@ package com.sovannara.spring_boot_auth.token;
 
 import com.sovannara.spring_boot_auth.user.User;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
