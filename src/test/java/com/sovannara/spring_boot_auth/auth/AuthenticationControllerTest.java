@@ -1,11 +1,16 @@
 package com.sovannara.spring_boot_auth.auth;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sovannara.spring_boot_auth.auth.dto.AuthenticationResponseDto;
+import com.sovannara.spring_boot_auth.auth.dto.LoginRequestDto;
+import com.sovannara.spring_boot_auth.auth.dto.RegisterRequestDto;
 import com.sovannara.spring_boot_auth.config.SecurityConfigTest;
 import com.sovannara.spring_boot_auth.exception.ApiResponse;
 import com.sovannara.spring_boot_auth.exception.BadRequestException;
 import com.sovannara.spring_boot_auth.exception.UnauthorizedException;
 import com.sovannara.spring_boot_auth.jwt.JwtService;
+import com.sovannara.spring_boot_auth.user.Role;
+import com.sovannara.spring_boot_auth.user.User;
 import com.sovannara.spring_boot_auth.user.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -47,16 +52,24 @@ public class AuthenticationControllerTest {
     @Test
     void shouldRegisterNewUser() throws Exception {
         RegisterRequestDto user = new RegisterRequestDto("John", "Wick", "johnwick@gmail.com", "password");
-        AuthenticationResponseDto responseDto = new AuthenticationResponseDto("accessToken", "refreshToken");
+        User responseDto = User.builder()
+                .firstname("John")
+                .lastname("Wick")
+                .email("johnwick@gmail.com")
+                .password("password")
+                .role(Role.USER)
+                .build();
 
         when(authenticationService.register(any(RegisterRequestDto.class))).thenReturn(ApiResponse.success(responseDto));
 
-        mockMvc.perform(post("/api/v1/auth/register")
+        mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(user)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.access_token").value("accessToken"))
-                .andExpect(jsonPath("$.data.refresh_token").value("refreshToken"));
+                .andExpect(jsonPath("$.data.firstname").value("John"))
+                .andExpect(jsonPath("$.data.lastname").value("Wick"))
+                .andExpect(jsonPath("$.data.email").value("johnwick@gmail.com"))
+                .andExpect(jsonPath("$.data.role").value("USER"));
     }
 
     @Test
@@ -66,7 +79,7 @@ public class AuthenticationControllerTest {
 
         when(authenticationService.login(any(LoginRequestDto.class))).thenReturn(ApiResponse.success(responseDto));
 
-        mockMvc.perform(post("/api/v1/auth/login")
+        mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(user)))
                 .andExpect(status().isOk())
@@ -81,7 +94,7 @@ public class AuthenticationControllerTest {
 
         when(authenticationService.confirm(token)).thenReturn(responseMessage);
 
-        mockMvc.perform(get("/api/v1/auth/confirm")
+        mockMvc.perform(get("/api/auth/confirm")
                         .param("token", token))
                 .andExpect(status().isOk())
                 .andExpect(content().string(responseMessage));
@@ -99,7 +112,7 @@ public class AuthenticationControllerTest {
             return null;
         }).when(authenticationService).refreshToken(any(HttpServletRequest.class), any(HttpServletResponse.class));
 
-        mockMvc.perform(post("/api/v1/auth/refresh-token")
+        mockMvc.perform(post("/api/auth/refresh-token")
                         .header(HttpHeaders.AUTHORIZATION, refreshToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.access_token").value("newAccessToken"))
@@ -113,7 +126,7 @@ public class AuthenticationControllerTest {
         when(authenticationService.register(any(RegisterRequestDto.class)))
                 .thenThrow(new BadRequestException("The email is already exists."));
 
-        mockMvc.perform(post("/api/v1/auth/register")
+        mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(user)))
                 .andExpect(status().isBadRequest())
@@ -127,7 +140,7 @@ public class AuthenticationControllerTest {
         when(authenticationService.login(any(LoginRequestDto.class)))
                 .thenThrow(new UnauthorizedException("Incorrect email or password."));
 
-        mockMvc.perform(post("/api/v1/auth/login")
+        mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(user)))
                 .andExpect(status().isUnauthorized())
@@ -140,7 +153,7 @@ public class AuthenticationControllerTest {
 
         when(authenticationService.confirm(token)).thenThrow(new UnauthorizedException("Invalid token"));
 
-        mockMvc.perform(get("/api/v1/auth/confirm")
+        mockMvc.perform(get("/api/auth/confirm")
                         .param("token", token))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.message").value("Invalid token"));
