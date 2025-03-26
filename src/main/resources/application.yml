@@ -5,7 +5,7 @@ spring:
   application:
     name: spring-boot-auth
   datasource:
-    url: jdbc:postgresql://localhost:5432/workshop
+    url: jdbc:postgresql://localhost:5432/auth-app
     username: postgres
     password: postgres
     driver-class-name: org.postgresql.Driver
