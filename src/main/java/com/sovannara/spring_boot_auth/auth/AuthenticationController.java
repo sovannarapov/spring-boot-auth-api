@@ -17,26 +17,26 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class AuthenticationController {
 
-    private final AuthenticationService service;
+    private final AuthenticationService _service;
 
     @PostMapping("/register")
     ApiResponse<User> register(@RequestBody RegisterRequestDto registerRequestDto) {
-        return service.register(registerRequestDto);
+        return _service.register(registerRequestDto);
     }
 
     @PostMapping("/login")
     ApiResponse<AuthenticationResponseDto> login(@RequestBody LoginRequestDto loginRequestDto) {
-        return service.login(loginRequestDto);
+        return _service.login(loginRequestDto);
     }
 
     @GetMapping("/confirm")
     String confirm(@RequestParam String token) {
-        return service.confirm(token);
+        return _service.confirm(token);
     }
 
     @PostMapping("/refresh-token")
     void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        service.refreshToken(request, response);
+        _service.refreshToken(request, response);
     }
 
 }
