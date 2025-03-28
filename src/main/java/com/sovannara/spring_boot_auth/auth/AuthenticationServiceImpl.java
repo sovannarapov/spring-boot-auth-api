@@ -1,9 +1,9 @@
 package com.sovannara.spring_boot_auth.auth;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sovannara.spring_boot_auth.auth.dto.AuthenticationResponseDto;
-import com.sovannara.spring_boot_auth.auth.dto.LoginRequestDto;
-import com.sovannara.spring_boot_auth.auth.dto.RegisterRequestDto;
+import com.sovannara.spring_boot_auth.auth.dto.AuthenticationDto;
+import com.sovannara.spring_boot_auth.auth.dto.LoginRequest;
+import com.sovannara.spring_boot_auth.auth.dto.RegisterRequest;
 import com.sovannara.spring_boot_auth.exception.ApiResponse;
 import com.sovannara.spring_boot_auth.exception.BadRequestException;
 import com.sovannara.spring_boot_auth.exception.UnauthorizedException;
@@ -38,65 +38,63 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class AuthenticationServiceImpl implements AuthenticationService {
 
-    private static final Logger logger = LoggerFactory.getLogger(AuthenticationServiceImpl.class);
+    private static final Logger _logger = LoggerFactory.getLogger(AuthenticationServiceImpl.class);
     @Value("${application.security.auth.confirmation-url}")
     private String CONFIRM_URL;
 
-    private final UserRepository repository;
-    private final PasswordEncoder passwordEncoder;
-    private final TokenRepository tokenRepository;
-    private final MailService mailService;
-    private final AuthenticationManager authenticationManager;
-    private final JwtService jwtService;
+    private final UserRepository _repository;
+    private final PasswordEncoder _passwordEncoder;
+    private final TokenRepository _tokenRepository;
+    private final MailService _mailService;
+    private final AuthenticationManager _authenticationManager;
+    private final JwtService _jwtService;
 
     @Override
     @Transactional
-    public ApiResponse<User> register(RegisterRequestDto registerRequestDto) {
-        final boolean userExists = repository.findByEmail(registerRequestDto.getEmail()).isPresent();
+    public ApiResponse<User> register(RegisterRequest request) {
+        final boolean userExists = _repository.findByEmail(request.getEmail()).isPresent();
 
         if (userExists) {
             throw new BadRequestException("The email is already exists.");
         }
 
         // Encode the password
-        String encodedPassword = passwordEncoder.encode(registerRequestDto.getPassword());
+        String encodedPassword = _passwordEncoder.encode(request.getPassword());
 
         var user = User.builder()
-                .firstname(registerRequestDto.getFirstname())
-                .lastname(registerRequestDto.getLastname())
-                .email(registerRequestDto.getEmail())
+                .firstname(request.getFirstname())
+                .lastname(request.getLastname())
+                .email(request.getEmail())
                 .password(encodedPassword)
                 .role(Role.USER)
                 .build();
-        var savedUser = repository.save(user);
-        var jwtToken = jwtService.generateToken(user);
+        var savedUser = _repository.save(user);
+        var jwtToken = _jwtService.generateToken(user);
 
-        jwtService.generateRefreshToken(user);
+        _jwtService.generateRefreshToken(user);
 
         saveUserToken(savedUser, jwtToken);
 
         // Send the confirmation email
-        String username = registerRequestDto.getFirstname() + registerRequestDto.getLastname();
+        String username = request.getFirstname() + request.getLastname();
         try {
-            mailService.send(
-                    registerRequestDto.getEmail(),
+            _mailService.send(
+                    request.getEmail(),
                     username,
                     null,
                     String.format(CONFIRM_URL, jwtToken)
             );
         } catch (MessagingException e) {
-            logger.error("Failed to send confirmation email", e);
+            _logger.error("Failed to send confirmation email", e);
         }
 
-        return ApiResponse.success(
-                savedUser
-        );
+        return ApiResponse.success(savedUser);
     }
 
     @Override
-    public ApiResponse<AuthenticationResponseDto> login(@NotNull LoginRequestDto request) {
+    public ApiResponse<AuthenticationDto> login(@NotNull LoginRequest request) {
         try {
-            authenticationManager.authenticate(
+            _authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             request.getEmail(),
                             request.getPassword()
@@ -106,21 +104,21 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             throw new UnauthorizedException("Incorrect email or password.");
         }
 
-        var user = repository.findByEmail(request.getEmail())
+        var user = _repository.findByEmail(request.getEmail())
                 .orElseThrow();
-        var token = tokenRepository.findByUserIdAndTokenType(user.getId(), TokenType.BEARER)
+        var token = _tokenRepository.findByUserIdAndTokenType(user.getId(), TokenType.BEARER)
                 .orElseThrow(() -> new UnauthorizedException("Token not found or not confirmed"));
 
         if (token.getValidatedAt() == null) {
             throw new UnauthorizedException("Token not confirmed");
         }
-        var accessToken = jwtService.generateToken(user);
-        var refreshToken = jwtService.generateRefreshToken(user);
+        var accessToken = _jwtService.generateToken(user);
+        var refreshToken = _jwtService.generateRefreshToken(user);
 
         revokeAllUserTokens(user);
         saveUserToken(user, accessToken);
 
-        return ApiResponse.success(AuthenticationResponseDto.builder()
+        return ApiResponse.success(AuthenticationDto.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .build());
@@ -137,11 +135,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .revoked(false)
                 .build();
 
-        tokenRepository.save(token);
+        _tokenRepository.save(token);
     }
 
     private void revokeAllUserTokens(User user) {
-        var validUserTokens = tokenRepository.findAllValidTokenByUser(user.getId());
+        var validUserTokens = _tokenRepository.findAllValidTokenByUser(user.getId());
 
         if (validUserTokens.isEmpty()) return;
 
@@ -150,18 +148,18 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             token.setRevoked(true);
         });
 
-        tokenRepository.saveAll(validUserTokens);
+        _tokenRepository.saveAll(validUserTokens);
     }
 
     @Override
     public String confirm(String token) {
         // get the token
-        Token savedToken = tokenRepository.findByToken(token)
+        Token savedToken = _tokenRepository.findByToken(token)
                 .orElseThrow(() -> new IllegalArgumentException("Token not found"));
 
         if (LocalDateTime.now().isAfter(savedToken.getExpiresAt())) {
             // Generate a token
-            var jwtToken = jwtService.generateToken(savedToken.getUser());
+            var jwtToken = _jwtService.generateToken(savedToken.getUser());
             Token newToken = Token.builder()
                     .token(jwtToken)
                     .createdAt(LocalDateTime.now())
@@ -169,17 +167,17 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                     .user(savedToken.getUser())
                     .build();
 
-            tokenRepository.save(newToken);
+            _tokenRepository.save(newToken);
 
             try {
-                mailService.send(
+                _mailService.send(
                         savedToken.getUser().getEmail(),
                         savedToken.getUser().getFirstname(),
                         null,
                         String.format(CONFIRM_URL, jwtToken)
                 );
             } catch (MessagingException e) {
-                logger.error("Error sending email: {}", e.getMessage());
+                _logger.error("Error sending email: {}", e.getMessage());
             }
 
             return "Token expired, a new token has been sent to your email";
@@ -189,13 +187,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             throw new UnauthorizedException("Invalid token");
         }
 
-        User user = repository.findById(savedToken.getUser().getId())
+        User user = _repository.findById(savedToken.getUser().getId())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        repository.save(user);
+        _repository.save(user);
 
         savedToken.setValidatedAt(LocalDateTime.now());
-        tokenRepository.save(savedToken);
+        _tokenRepository.save(savedToken);
         return "<h1>Your account hase been successfully activated</h1>";
     }
 
@@ -211,15 +209,15 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             return;
         }
         refreshToken = authHeader.substring(7);
-        userEmail = jwtService.extractUsername(refreshToken);
+        userEmail = _jwtService.extractUsername(refreshToken);
         if (userEmail != null) {
-            var user = this.repository.findByEmail(userEmail)
+            var user = this._repository.findByEmail(userEmail)
                     .orElseThrow();
-            if (jwtService.isTokenValid(refreshToken, user)) {
-                var accessToken = jwtService.generateToken(user);
+            if (_jwtService.isTokenValid(refreshToken, user)) {
+                var accessToken = _jwtService.generateToken(user);
                 revokeAllUserTokens(user);
                 saveUserToken(user, accessToken);
-                var authResponse = AuthenticationResponseDto.builder()
+                var authResponse = AuthenticationDto.builder()
                         .accessToken(accessToken)
                         .refreshToken(refreshToken)
                         .build();
