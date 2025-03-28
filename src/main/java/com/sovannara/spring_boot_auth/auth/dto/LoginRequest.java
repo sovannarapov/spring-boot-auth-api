@@ -1,4 +1,4 @@
-package com.sovannara.spring_boot_auth.auth;
+package com.sovannara.spring_boot_auth.auth.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class LoginRequestDto {
+public class LoginRequest {
 
     private String email;
 

@@ -1,4 +1,4 @@
-package com.sovannara.spring_boot_auth.auth;
+package com.sovannara.spring_boot_auth.auth.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class AuthenticationResponseDto {
+public class AuthenticationDto {
 
     @JsonProperty("access_token")
     private String accessToken;

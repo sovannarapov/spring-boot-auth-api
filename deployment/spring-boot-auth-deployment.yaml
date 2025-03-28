@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spring-boot-auth-deployment
+  labels:
+    app: spring-boot-auth
+  namespace: spring-boot-auth
+spec:
+  replicas: 2  # Number of Pods
+  selector:
+    matchLabels:
+      app: spring-boot-auth
+  template:
+    metadata:
+      labels:
+        app: spring-boot-auth
+    spec:
+      containers:
+        - name: spring-boot-auth
+          image: localhost:5001/spring-boot-auth:local
+          ports:
+            - containerPort: 8080
+          resources:
+            limits:
+              cpu: "1"
+              memory: "512Mi"
+            requests:
+              cpu: "0.5"
+              memory: "256Mi"
+          envFrom:
+            - configMapRef:
+                name: app-config
+            - secretRef:
+                name: app-secrets
