@@ -1,4 +1,4 @@
-name: CI
+name: Build & Test 🧪
 
 on:
   push:
@@ -12,6 +12,8 @@ env:
   DB_DATABASE: ${{ secrets.DB_DATABASE }}
   DB_USERNAME: ${{ secrets.DB_USERNAME }}
   DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+  JAVA_VERSION: '21'
+  JAVA_DISTRIBUTION: 'temurin'
 
 jobs:
   build:
@@ -43,8 +45,8 @@ jobs:
       - name: Set up JDK 21 🏗
         uses: actions/setup-java@v3
         with:
-          java-version: '21'
-          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
 
       - name: Cache Maven packages 📦
         uses: actions/cache@v3
