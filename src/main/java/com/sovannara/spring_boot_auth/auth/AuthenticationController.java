@@ -1,8 +1,8 @@
 package com.sovannara.spring_boot_auth.auth;
 
-import com.sovannara.spring_boot_auth.auth.dto.AuthenticationResponseDto;
-import com.sovannara.spring_boot_auth.auth.dto.LoginRequestDto;
-import com.sovannara.spring_boot_auth.auth.dto.RegisterRequestDto;
+import com.sovannara.spring_boot_auth.auth.dto.AuthenticationDto;
+import com.sovannara.spring_boot_auth.auth.dto.LoginRequest;
+import com.sovannara.spring_boot_auth.auth.dto.RegisterRequest;
 import com.sovannara.spring_boot_auth.exception.ApiResponse;
 import com.sovannara.spring_boot_auth.user.User;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,13 +20,13 @@ public class AuthenticationController {
     private final AuthenticationService _service;
 
     @PostMapping("/register")
-    ApiResponse<User> register(@RequestBody RegisterRequestDto registerRequestDto) {
-        return _service.register(registerRequestDto);
+    ApiResponse<User> register(@RequestBody RegisterRequest request) {
+        return _service.register(request);
     }
 
     @PostMapping("/login")
-    ApiResponse<AuthenticationResponseDto> login(@RequestBody LoginRequestDto loginRequestDto) {
-        return _service.login(loginRequestDto);
+    ApiResponse<AuthenticationDto> login(@RequestBody LoginRequest request) {
+        return _service.login(request);
     }
 
     @GetMapping("/confirm")
