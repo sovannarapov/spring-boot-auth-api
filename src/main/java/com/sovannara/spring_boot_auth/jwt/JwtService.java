@@ -3,10 +3,13 @@ package com.sovannara.spring_boot_auth.jwt;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import com.sovannara.spring_boot_auth.token.TokenRepository;
 import com.sovannara.spring_boot_auth.user.User;
 
 import io.jsonwebtoken.Claims;
@@ -20,6 +23,7 @@ import java.util.function.Function;
 import javax.crypto.SecretKey;
 
 @Service
+@RequiredArgsConstructor
 public class JwtService {
 
     @Value("${application.security.jwt.secret-key}")
@@ -30,6 +34,8 @@ public class JwtService {
 
     @Value("${application.security.jwt.refresh-token-expiration}")
     private long REFRESH_TOKEN_EXPIRE;
+
+    private final TokenRepository _tokenRepository;
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
@@ -104,6 +110,20 @@ public class JwtService {
     private SecretKey getSignInKey() {
         byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
         return Keys.hmacShaKeyFor(keyBytes);
+    }
+
+    public boolean isTokenBlacklisted(String token) {
+        return _tokenRepository.findByToken(token)
+            .map(t -> t.isRevoked() || t.isExpired())
+            .orElse(false);
+    }
+
+    public void blacklistToken(String token) {
+        _tokenRepository.findByToken(token).ifPresent(t -> {
+            t.setRevoked(true);
+            t.setExpired(true);
+            _tokenRepository.save(t);
+        });
     }
 
 }
