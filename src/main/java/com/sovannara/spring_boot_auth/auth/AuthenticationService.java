@@ -1,8 +1,8 @@
 package com.sovannara.spring_boot_auth.auth;
 
-import com.sovannara.spring_boot_auth.auth.dto.AuthenticationResponseDto;
-import com.sovannara.spring_boot_auth.auth.dto.LoginRequestDto;
-import com.sovannara.spring_boot_auth.auth.dto.RegisterRequestDto;
+import com.sovannara.spring_boot_auth.auth.dto.AuthenticationDto;
+import com.sovannara.spring_boot_auth.auth.dto.LoginRequest;
+import com.sovannara.spring_boot_auth.auth.dto.RegisterRequest;
 import com.sovannara.spring_boot_auth.exception.ApiResponse;
 import com.sovannara.spring_boot_auth.user.User;
 import jakarta.servlet.http.HttpServletRequest;
@@ -12,9 +12,9 @@ import java.io.IOException;
 
 public interface AuthenticationService {
 
-    ApiResponse<User> register(RegisterRequestDto registerRequestDto);
+    ApiResponse<User> register(RegisterRequest request);
 
-    ApiResponse<AuthenticationResponseDto> login(LoginRequestDto request);
+    ApiResponse<AuthenticationDto> login(LoginRequest request);
 
     String confirm(String token);
 
