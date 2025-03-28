@@ -20,6 +20,13 @@ spec:
           image: localhost:5001/spring-boot-auth:local
           ports:
             - containerPort: 8080
+          resources:
+            limits:
+              cpu: "1"
+              memory: "512Mi"
+            requests:
+              cpu: "0.5"
+              memory: "256Mi"
           envFrom:
             - configMapRef:
                 name: app-config
