@@ -1,9 +1,9 @@
 package com.sovannara.spring_boot_auth.auth;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sovannara.spring_boot_auth.auth.dto.AuthenticationResponseDto;
-import com.sovannara.spring_boot_auth.auth.dto.LoginRequestDto;
-import com.sovannara.spring_boot_auth.auth.dto.RegisterRequestDto;
+import com.sovannara.spring_boot_auth.auth.dto.AuthenticationDto;
+import com.sovannara.spring_boot_auth.auth.dto.LoginRequest;
+import com.sovannara.spring_boot_auth.auth.dto.RegisterRequest;
 import com.sovannara.spring_boot_auth.config.SecurityConfigTest;
 import com.sovannara.spring_boot_auth.exception.ApiResponse;
 import com.sovannara.spring_boot_auth.exception.BadRequestException;
@@ -51,7 +51,7 @@ public class AuthenticationControllerTest {
 
     @Test
     void shouldRegisterNewUser() throws Exception {
-        RegisterRequestDto user = new RegisterRequestDto("John", "Wick", "johnwick@gmail.com", "password");
+        RegisterRequest user = new RegisterRequest("John", "Wick", "johnwick@gmail.com", "password");
         User responseDto = User.builder()
                 .firstname("John")
                 .lastname("Wick")
@@ -60,7 +60,7 @@ public class AuthenticationControllerTest {
                 .role(Role.USER)
                 .build();
 
-        when(authenticationService.register(any(RegisterRequestDto.class))).thenReturn(ApiResponse.success(responseDto));
+        when(authenticationService.register(any(RegisterRequest.class))).thenReturn(ApiResponse.success(responseDto));
 
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -74,10 +74,10 @@ public class AuthenticationControllerTest {
 
     @Test
     void shouldLoginUser() throws Exception {
-        LoginRequestDto user = new LoginRequestDto("johnwick@gmail.com", "password");
-        AuthenticationResponseDto responseDto = new AuthenticationResponseDto("accessToken", "refreshToken");
+        LoginRequest user = new LoginRequest("johnwick@gmail.com", "password");
+        AuthenticationDto responseDto = new AuthenticationDto("accessToken", "refreshToken");
 
-        when(authenticationService.login(any(LoginRequestDto.class))).thenReturn(ApiResponse.success(responseDto));
+        when(authenticationService.login(any(LoginRequest.class))).thenReturn(ApiResponse.success(responseDto));
 
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -103,7 +103,7 @@ public class AuthenticationControllerTest {
     @Test
     void shouldRefreshToken() throws Exception {
         String refreshToken = "Bearer sampleRefreshToken";
-        AuthenticationResponseDto responseDto = new AuthenticationResponseDto("newAccessToken", "newRefreshToken");
+        AuthenticationDto responseDto = new AuthenticationDto("newAccessToken", "newRefreshToken");
 
         when(jwtService.extractUsername(any(String.class))).thenReturn("johnwick@gmail.com");
         doAnswer(invocation -> {
@@ -121,9 +121,9 @@ public class AuthenticationControllerTest {
 
     @Test
     void shouldNotRegisterUserWithExistingEmail() throws Exception {
-        RegisterRequestDto user = new RegisterRequestDto("John", "Wick", "johnwick@gmail.com", "password");
+        RegisterRequest user = new RegisterRequest("John", "Wick", "johnwick@gmail.com", "password");
 
-        when(authenticationService.register(any(RegisterRequestDto.class)))
+        when(authenticationService.register(any(RegisterRequest.class)))
                 .thenThrow(new BadRequestException("The email is already exists."));
 
         mockMvc.perform(post("/api/auth/register")
@@ -135,9 +135,9 @@ public class AuthenticationControllerTest {
 
     @Test
     void shouldNotLoginWithIncorrectPassword() throws Exception {
-        LoginRequestDto user = new LoginRequestDto("johnwick@gmail.com", "wrongpassword");
+        LoginRequest user = new LoginRequest("johnwick@gmail.com", "wrongpassword");
 
-        when(authenticationService.login(any(LoginRequestDto.class)))
+        when(authenticationService.login(any(LoginRequest.class)))
                 .thenThrow(new UnauthorizedException("Incorrect email or password."));
 
         mockMvc.perform(post("/api/auth/login")
